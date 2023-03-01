@@ -1,6 +1,6 @@
 //--------------------------------------------------
-// Author:
-// Date:
+// Author: David Dinh
+// Date: March 2 2023
 // Description: Loads PLY files in ASCII format
 //--------------------------------------------------
 
