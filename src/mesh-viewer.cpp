@@ -28,7 +28,8 @@ public:
 
    void mouseMotion(int x, int y, int dx, int dy) {
       if (keyIsDown(GLFW_KEY_LEFT_SHIFT) && mouseIsDown(GLFW_MOUSE_BUTTON_LEFT)) {
-         radius= std::max(10.0f, radius + dx + dy);
+         // more intuitive left shift mouse click only depending on horizontal movement
+         radius= std::max(10.0f, radius - dx);
          cout << "radius: " << radius << endl;
       } else if (mouseIsDown(GLFW_MOUSE_BUTTON_LEFT)) {
          azimuth+= (float)dx * 0.01f;
@@ -60,7 +61,7 @@ public:
          mesh.load("../models/" + models[curModel]);
          std::cout << "changed model to: " << models[curModel] << std::endl;
          elevation= 0;
-         azimuth= M_PI;
+         azimuth= 0;
       } else if (key == GLFW_KEY_P) {
          curModel= (curModel - 1 + numModels) % numModels;
          mesh= PLYMesh();
@@ -81,9 +82,9 @@ public:
       vec3 scale= (maxBounds - minBounds);
 
       // do not want NaNs when we scale
-      scale.x= (scale.x <= 0.000001f && scale.x >= -0.000001f) ? 1 : 9 / scale.x;
-      scale.y= (scale.y <= 0.000001f && scale.y >= -0.000001f) ? 1 : 9 / scale.y;
-      scale.z= (scale.z <= 0.000001f && scale.z >= -0.000001f) ? 1 : 9 / scale.z;
+      scale.x= (scale.x <= 0.000001f && scale.x >= -0.000001f) ? 1 : 10 / scale.x;
+      scale.y= (scale.y <= 0.000001f && scale.y >= -0.000001f) ? 1 : 10 / scale.y;
+      scale.z= (scale.z <= 0.000001f && scale.z >= -0.000001f) ? 1 : 10 / scale.z;
 
       // then we only want to take the minimum scale to ensure that it is within the box
       // but also scales each dimension by the same factor
@@ -113,7 +114,6 @@ public:
 
       renderer.lookAt(eyePos, lookPos, camY);
       renderer.mesh(mesh);
-
    }
 
 protected:
@@ -128,7 +128,7 @@ protected:
    int curModel= 0;
    float radius= 10.0f;
    float elevation= 0;
-   float azimuth= M_PI;
+   float azimuth= 0;
 };
 
 int main(int argc, char** argv)
