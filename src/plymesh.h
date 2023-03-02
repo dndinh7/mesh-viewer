@@ -45,8 +45,13 @@ namespace agl {
       // face indices in this model
       const std::vector<GLuint>& indices() const;
 
+   private:
+      // Clears the vectors to get ready for the next load
+      void clear();
+
    protected:
       void init();
+
 
    protected:
 

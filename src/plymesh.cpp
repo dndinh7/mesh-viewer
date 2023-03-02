@@ -43,11 +43,19 @@ namespace agl {
     return false;
   }
 
+  void PLYMesh::clear() {
+    this->_positions.clear();
+    this->_normals.clear();
+    this->_faces.clear();
+  }
+
   bool PLYMesh::load(const std::string& filename) {
+    this->clear();
     if (_positions.size() != 0) {
       std::cout << "WARNING: Cannot load different files with the same PLY mesh\n";
       return false;
     }
+
     string line;
     string token;
     ifstream file(filename);

@@ -10,7 +10,7 @@ using namespace glm;
 using namespace agl;
 
 int main() {
-   PLYMesh mesh("../models/triangle.ply");
+   PLYMesh mesh("../models/cube.ply");
 
    // print vertices, normals, colors, etc
    std::cout << "This mesh has " << mesh.numVertices() << " vertices" << std::endl;
