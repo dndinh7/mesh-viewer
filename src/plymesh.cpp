@@ -50,7 +50,6 @@ namespace agl {
   }
 
   bool PLYMesh::load(const std::string& filename) {
-    this->clear();
     if (_positions.size() != 0) {
       std::cout << "WARNING: Cannot load different files with the same PLY mesh\n";
       return false;
