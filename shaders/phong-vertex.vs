@@ -29,13 +29,13 @@ struct MaterialProp {
 
 uniform MaterialProp Material;
 
-vec3 phong(vec4 p_eye, vec3 n_eye, vec4 lightPos_eye) {
+vec3 phong(vec4 p_eye, vec3 n_eye) {
    // vector to the light source
    vec3 s;
    if (Light.Pos.w == 0.0f) // directional light source
-      s= normalize(vec3(lightPos_eye));
+      s= normalize(vec3(Light.Pos));
    else // positional light source
-      s= normalize(vec3(lightPos_eye - p_eye));
+      s= normalize(vec3(Light.Pos - p_eye));
    
    vec3 v= normalize(-vec3(p_eye));
 
@@ -55,9 +55,8 @@ void main()
    // get the normal and vertex position to eye coordinates
    vec3 n_eye= normalize(NormalMatrix * vNormals);
    vec4 p_eye= ModelViewMatrix * vec4(vPos, 1.0);
-   vec4 lightPos_eye= ModelViewMatrix * Light.Pos;
    
-   Intensity= phong(p_eye, n_eye, lightPos_eye);
+   Intensity= phong(p_eye, n_eye);
 
    gl_Position = MVP * vec4(vPos, 1.0);
 }

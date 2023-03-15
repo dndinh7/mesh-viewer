@@ -133,17 +133,24 @@ public:
         /*vec3 lightColor= vec3(sin(elapsedTime() * 2.0f), sin(elapsedTime()*0.7f), sin(elapsedTime()*1.3f));
         vec3 Ld= lightColor * vec3(0.5f);
         vec3 La= Ld * vec3(0.2f);*/
-        vec3 La= vec3(0.2f);
-        vec3 Ld= vec3(0.5f);
+        vec3 La= vec3(0.2f); // light ambience 
+        vec3 Ld= vec3(0.5f); // light diffusion
+        vec3 Ls= vec3(1.0f); // light specular
+        vec3 lightPosition= vec3(10.0f, 2.5f, 5.0f);
+        renderer.translate(lightPosition); // convert to eye pos
         
         renderer.setUniform("Light.La", La);
         renderer.setUniform("Light.Ld", Ld);
-        renderer.setUniform("Light.Ls", vec3(1.0f, 1.0f, 1.0f));
-        renderer.setUniform("Light.Pos", vec4(10.0f, 2.5f, 5.0f, 1.0f));
+        renderer.setUniform("Light.Ls", Ls);
+        renderer.setUniform("Light.Pos", vec4(lightPosition, 1.0f));
+
+        vec3 Ka= vec3(0.21f, 0.31f, 1.0f);
+        vec3 Kd= vec3(0.21f, 0.31f, 1.0f);
+        vec3 Ks= vec3(0.5f);
         
-        renderer.setUniform("Material.Ka", vec3(0.21f, 0.31f, 1.0f));
-        renderer.setUniform("Material.Kd", vec3(0.21f, 0.31f, 1.0f));
-        renderer.setUniform("Material.Ks", vec3(0.5f, 0.5f, 0.5f));
+        renderer.setUniform("Material.Ka", Ka);
+        renderer.setUniform("Material.Kd", Kd);
+        renderer.setUniform("Material.Ks", Ks);
         renderer.setUniform("Material.alpha", 32.0f);
       }
 
