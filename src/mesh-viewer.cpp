@@ -21,9 +21,19 @@ public:
    }
 
    void setup() {
+      renderer.loadShader("normals", "../shaders/normals.vs", "../shaders/normals.fs");
+      renderer.loadShader("phong-vertex", "../shaders/phong-vertex.vs", "../shaders/phong-vertex.fs");
+      renderer.loadShader("phong-pixel", "../shaders/phong-pixel.vs", "../shaders/phong-pixel.fs");
+      shaders.push_back("normals");
+      shaders.push_back("phong-vertex");
+      shaders.push_back("phong-pixel");
+      numShaders= 3;
+
       models= GetFilenamesInDir("../models", "ply");
       mesh.load("../models/" + models[curModel]);
       numModels= models.size();
+
+      
    }
 
    void mouseMotion(int x, int y, int dx, int dy) {
@@ -56,20 +66,23 @@ public:
 
    void keyUp(int key, int mods) {
       if (key == GLFW_KEY_N) { // next model
-         curModel= (curModel + 1) % numModels;
-         mesh= PLYMesh();
-         mesh.load("../models/" + models[curModel]);
-         std::cout << "changed model to: " << models[curModel] << std::endl;
-         elevation= 0;
-         azimuth= 0;
+        curModel= (curModel + 1) % numModels;
+        mesh= PLYMesh();
+        mesh.load("../models/" + models[curModel]);
+        std::cout << "changed model to: " << models[curModel] << std::endl;
+        elevation= 0;
+        azimuth= 0;
       } else if (key == GLFW_KEY_P) {
-         curModel= (curModel - 1 + numModels) % numModels;
-         mesh= PLYMesh();
-         mesh.load("../models/" + models[curModel]);
-         std::cout << "changed model to: " << models[curModel] << std::endl;
-         elevation= 0;
-         azimuth= 0;
+        curModel= (curModel - 1 + numModels) % numModels;
+        mesh= PLYMesh();
+        mesh.load("../models/" + models[curModel]);
+        std::cout << "changed model to: " << models[curModel] << std::endl;
+        elevation= 0;
+        azimuth= 0;
+      } else if (key == GLFW_KEY_S) {
+        curShader= (curShader + 1) % numShaders;
       }
+
    }
 
    void draw() {
@@ -113,28 +126,48 @@ public:
       camY= cross(camZ, camX);
 
       renderer.lookAt(eyePos, lookPos, camY);
+
+      renderer.beginShader(shaders[curShader]);
+      if (curShader != 0) {
+        renderer.setUniform("Light.La", vec3(0.8f, 0.8f, 0.8f));
+        renderer.setUniform("Light.Ld", vec3(0.8f, 0.8f, 0.8f));
+        renderer.setUniform("Light.Ls", vec3(0.8f, 0.8f, 0.8f));
+        renderer.setUniform("Light.Pos", vec4(15.0f, 15.0f, 15.0f, 1));
+        renderer.setUniform("Light.Col", vec3(0.7f, 0.7f, 0.0f));
+        
+        renderer.setUniform("Material.Ka", vec3(0.8f, 0.8f, 0.8f));
+        renderer.setUniform("Material.Kd", vec3(0.8f, 0.8f, 0.8f));
+        renderer.setUniform("Material.Ks", vec3(0.8f, 0.8f, 0.8f));
+        renderer.setUniform("Material.alpha", 2.3f);
+      }
+
       renderer.mesh(mesh);
+
+      renderer.endShader();
    }
 
 protected:
-   PLYMesh mesh;
-   vec3 eyePos = vec3(10, 0, 0);
-   vec3 lookPos = vec3(0, 0, 0);
-   vec3 camX= vec3(1, 0, 0); // x axis of camera
-   vec3 camY= vec3(0, 1, 0); // y axis of camera
-   vec3 camZ= vec3(0, 0, 1); // z axis of camera
-   std::vector<string> models;
-   int numModels;
-   int curModel= 0;
-   float radius= 10.0f;
-   float elevation= 0;
-   float azimuth= 0;
+  PLYMesh mesh;
+  vec3 eyePos = vec3(10, 0, 0);
+  vec3 lookPos = vec3(0, 0, 0);
+  vec3 camX= vec3(1, 0, 0); // x axis of camera
+  vec3 camY= vec3(0, 1, 0); // y axis of camera
+  vec3 camZ= vec3(0, 0, 1); // z axis of camera
+  std::vector<string> models;
+  std::vector<string> shaders;
+  int numModels;
+  int numShaders;
+  int curShader= 0;
+  int curModel= 0;
+  float radius= 10.0f;
+  float elevation= 0;
+  float azimuth= 0;
 };
 
 int main(int argc, char** argv)
 {
-   MeshViewer viewer;
-   viewer.run();
-   return 0;
+  MeshViewer viewer;
+  viewer.run();
+  return 0;
 }
 
