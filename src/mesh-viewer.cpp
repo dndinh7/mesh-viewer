@@ -133,12 +133,12 @@ public:
       renderer.beginShader(shaders[curShader]);
       if (curShader != 0) {
 
-        vec3 La= vec3(1.0f); // light ambience 
-        vec3 Ld= vec3(1.0f); // light diffusion
-        vec3 Ls= vec3(1.0f); // light specular
+        vec3 La= vec3(0.90f); // light ambience 
+        vec3 Ld= vec3(0.90f); // light diffusion
+        vec3 Ls= vec3(0.90f); // light specular
 
         // light in world coordinates
-        vec4 lightPosition= vec4(0.0f, 5.0f, 10.0f, 1.0f);
+        vec4 lightPosition= vec4(0.0f, 5.0f, 10.0f, 0.0f);
 
         lightPosition= renderer.viewMatrix() * lightPosition;
         
@@ -147,9 +147,11 @@ public:
         renderer.setUniform("Light.Ls", Ls);
         renderer.setUniform("Light.Pos", lightPosition);
 
-        vec3 Ka= vec3(0.1f, 0, 0.45f); // reflect ambiance
-        vec3 Kd= vec3(0.1f, 0, 0.45f); // reflect diffusion
-        vec3 Ks= vec3(1.0f, 1.0f, 1.0f); // reflect specular
+
+        // silver material 
+        vec3 Ka= vec3(0.19225f); // reflect ambiance
+        vec3 Kd= vec3(0.50754f); // reflect diffusion
+        vec3 Ks= vec3(0.508273f); // reflect specular
         float shininess= 128.0f * 0.4f;
         
         renderer.setUniform("Material.Ka", Ka);
@@ -159,7 +161,6 @@ public:
       }
 
       renderer.mesh(mesh);
-      
       renderer.endShader();
    }
 
