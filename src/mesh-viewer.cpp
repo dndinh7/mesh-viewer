@@ -2,8 +2,8 @@
 // Author: David Dinh
 // Date: 2 March 2023
 // Description: Loads PLY files in ASCII format
-// References: https://learnopengl.com/Lighting/Materials
-// http://devernay.free.fr/cours/opengl/materials.html (different materials)
+// References: https://learnopengl.com/Lighting/Materials    
+// http://devernay.free.fr/cours/opengl/materials.html    (different materials)
 //--------------------------------------------------
 
 #include <cmath>
@@ -26,6 +26,7 @@ public:
       renderer.loadShader("normals", "../shaders/normals.vs", "../shaders/normals.fs");
       renderer.loadShader("phong-vertex", "../shaders/phong-vertex.vs", "../shaders/phong-vertex.fs");
       renderer.loadShader("phong-pixel", "../shaders/phong-pixel.vs", "../shaders/phong-pixel.fs");
+      renderer.loadShader("test", "../shaders/test.vs", "../shaders/test.fs");
       shaders.push_back("normals");
       shaders.push_back("phong-vertex");
       shaders.push_back("phong-pixel");
@@ -131,15 +132,13 @@ public:
 
       renderer.beginShader(shaders[curShader]);
       if (curShader != 0) {
-        /*vec3 lightColor= vec3(sin(elapsedTime() * 2.0f), sin(elapsedTime()*0.7f), sin(elapsedTime()*1.3f));
-        vec3 Ld= lightColor * vec3(0.5f);
-        vec3 La= Ld * vec3(0.2f);*/
 
-
-        vec3 La= vec3(0.2f); // light ambience 
-        vec3 Ld= vec3(0.5f); // light diffusion
+        vec3 La= vec3(1.0f); // light ambience 
+        vec3 Ld= vec3(1.0f); // light diffusion
         vec3 Ls= vec3(1.0f); // light specular
-        vec4 lightPosition= vec4(10.0f, 0.0f, 0.0f, 1.0f);
+
+        // light in world coordinates
+        vec4 lightPosition= vec4(0.0f, 5.0f, 10.0f, 1.0f);
 
         lightPosition= renderer.viewMatrix() * lightPosition;
         
@@ -148,26 +147,20 @@ public:
         renderer.setUniform("Light.Ls", Ls);
         renderer.setUniform("Light.Pos", lightPosition);
 
-        // chrome material
-
-        vec3 Ka= vec3(0.25f); // reflect ambiance
-        vec3 Kd= vec3(0.4f); // reflect diffusion
-        vec3 Ks= vec3(0.774597f); // reflect specular
-        float shininess= 128.0f * 0.6f;
-        vec3 color= vec3(0.5f, 0.5f, 0.5f);
+        vec3 Ka= vec3(0.1f, 0, 0.45f); // reflect ambiance
+        vec3 Kd= vec3(0.1f, 0, 0.45f); // reflect diffusion
+        vec3 Ks= vec3(1.0f, 1.0f, 1.0f); // reflect specular
+        float shininess= 128.0f * 0.4f;
         
         renderer.setUniform("Material.Ka", Ka);
         renderer.setUniform("Material.Kd", Kd);
         renderer.setUniform("Material.Ks", Ks);
-        renderer.setUniform("Material.color", color);
         renderer.setUniform("Material.alpha", shininess);
       }
 
       renderer.mesh(mesh);
       
       renderer.endShader();
-
-      
    }
 
 protected:

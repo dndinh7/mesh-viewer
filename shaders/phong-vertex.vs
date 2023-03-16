@@ -25,7 +25,6 @@ struct MaterialProp {
   vec3 Kd;    // reflect specular
   vec3 Ks;    // reflect specular
   float alpha; // specular exponent factor
-  vec3 color; // original material color
 };
 
 
@@ -39,7 +38,7 @@ vec3 phong(vec4 p_eye, vec3 n_eye) {
   else // positional light source
     s= normalize(vec3(Light.Pos - p_eye));
   
-  vec3 v= normalize(-vec3(p_eye)); // vector to camera
+  vec3 v= normalize(vec3(-p_eye)); // vector to camera
 
   vec3 ambient= Light.La * Material.Ka; // ambient light
 
@@ -63,7 +62,7 @@ void main()
    vec3 n_eye= normalize(NormalMatrix * vNormals);
    vec4 p_eye= ModelViewMatrix * vec4(vPos, 1.0);
    
-   Intensity= min(Material.color + phong(p_eye, n_eye), 1.0f);
+   Intensity= phong(p_eye, n_eye);
 
    gl_Position = MVP * vec4(vPos, 1.0);
 }

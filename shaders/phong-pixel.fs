@@ -27,22 +27,21 @@ out vec4 FragColor;
 vec3 phong() {
    // vector to the light source
    vec3 s;
+   vec3 n= normalize(n_eye);
 
-   if (abs(Light.Pos.w) <= 0.000001f) // directional light source
+   if (Light.Pos.w == 0.0f) // directional light source
       s= normalize(vec3(Light.Pos));
    else // positional light source
       s= normalize(vec3(Light.Pos - p_eye));
 
-   
-   
-   vec3 v= normalize(-vec3(p_eye)); // vector to camera
+   vec3 v= normalize(vec3(-p_eye)); // vector to camera
 
    vec3 ambient= Light.La * Material.Ka; // ambient light
 
-   float sDotn= max(dot(s, n_eye), 0);
+   float sDotn= max(dot(s, n), 0.0f);
    vec3 diffuse=  Light.Ld * Material.Kd * sDotn; // diffuse color
 
-   vec3 r= 2 * (sDotn) * n_eye - s; // reflected light 
+   vec3 r= 2 * (sDotn) * n - s; // reflected light 
    vec3 specular= vec3(0.0f);
 
    // this condition checks so that we only calculate
@@ -55,6 +54,5 @@ vec3 phong() {
 
 void main()
 {
-
-   FragColor = vec4(min(Material.color + phong(), vec3(1.0f)), 1.0);
+   FragColor = vec4(phong(), 1.0);
 }
