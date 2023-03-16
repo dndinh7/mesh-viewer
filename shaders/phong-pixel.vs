@@ -9,7 +9,14 @@ uniform mat4 ModelViewMatrix;
 uniform mat4 MVP;
 uniform bool HasUV;
 
+out vec3 n_eye;
+out vec4 p_eye;
+
 void main()
 {
-   gl_Position = MVP * vec4(vPos, 1.0);
+  // get the normal and vertex position to eye coordinates
+  n_eye= normalize(NormalMatrix * vNormals);
+  p_eye= ModelViewMatrix * vec4(vPos, 1.0);
+  
+  gl_Position = MVP * vec4(vPos, 1.0);
 }

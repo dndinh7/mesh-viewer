@@ -3,6 +3,7 @@
 // Date: 2 March 2023
 // Description: Loads PLY files in ASCII format
 // References: https://learnopengl.com/Lighting/Materials
+// http://devernay.free.fr/cours/opengl/materials.html (different materials)
 //--------------------------------------------------
 
 #include <cmath>
