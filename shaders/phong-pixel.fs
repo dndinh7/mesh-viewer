@@ -1,7 +1,7 @@
 #version 400
 
 struct LightSource {
-   vec4 Pos; // position of light in eye coordinates
+   vec4 pos; // position of light in eye coordinates
    vec3 La;  // light ambiance
    vec3 Ld;  // light diffusion
    vec3 Ls;  // light specular
@@ -29,10 +29,10 @@ vec3 phong() {
    vec3 s;
    vec3 n= normalize(n_eye);
 
-   if (Light.Pos.w == 0.0f) // directional light source
-      s= normalize(vec3(Light.Pos));
+   if (Light.pos.w == 0.0f) // directional light source
+      s= normalize(vec3(Light.pos));
    else // positional light source
-      s= normalize(vec3(Light.Pos - p_eye));
+      s= normalize(vec3(Light.pos - p_eye));
 
    vec3 v= normalize(vec3(-p_eye)); // vector to camera
 

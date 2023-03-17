@@ -145,7 +145,7 @@ public:
         renderer.setUniform("Light.La", La);
         renderer.setUniform("Light.Ld", Ld);
         renderer.setUniform("Light.Ls", Ls);
-        renderer.setUniform("Light.Pos", lightPosition);
+        renderer.setUniform("Light.pos", lightPosition);
 
         // silver material 
         vec3 Ka= vec3(0.19225f); // reflect ambiance
