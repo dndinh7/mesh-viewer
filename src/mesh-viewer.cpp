@@ -26,7 +26,6 @@ public:
       renderer.loadShader("normals", "../shaders/normals.vs", "../shaders/normals.fs");
       renderer.loadShader("phong-vertex", "../shaders/phong-vertex.vs", "../shaders/phong-vertex.fs");
       renderer.loadShader("phong-pixel", "../shaders/phong-pixel.vs", "../shaders/phong-pixel.fs");
-      renderer.loadShader("test", "../shaders/test.vs", "../shaders/test.fs");
       shaders.push_back("normals");
       shaders.push_back("phong-vertex");
       shaders.push_back("phong-pixel");
@@ -84,6 +83,7 @@ public:
         azimuth= 0;
       } else if (key == GLFW_KEY_S) {
         curShader= (curShader + 1) % numShaders;
+        std::cout << "changed shader to: " << shaders[curShader] << std::endl;
       }
 
    }
@@ -146,7 +146,6 @@ public:
         renderer.setUniform("Light.Ld", Ld);
         renderer.setUniform("Light.Ls", Ls);
         renderer.setUniform("Light.Pos", lightPosition);
-
 
         // silver material 
         vec3 Ka= vec3(0.19225f); // reflect ambiance
