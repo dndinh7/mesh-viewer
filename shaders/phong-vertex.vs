@@ -13,7 +13,7 @@ out vec3 Intensity; // outgoing intensity
 
 struct LightSource {
   vec4 pos; // position of light in eye coordinates
-  vec3 La;  // light ambiance
+  vec3 La;  // light ambience
   vec3 Ld;  // light diffusion
   vec3 Ls;  // light specular
 };
@@ -21,7 +21,7 @@ struct LightSource {
 uniform LightSource Light;
 
 struct MaterialProp {
-  vec3 Ka;    // reflect ambiance
+  vec3 Ka;    // reflect ambience
   vec3 Kd;    // reflect specular
   vec3 Ks;    // reflect specular
   float alpha; // specular exponent factor
