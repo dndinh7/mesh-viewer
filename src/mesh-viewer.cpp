@@ -4,6 +4,7 @@
 // Description: Loads PLY files in ASCII format
 // References: https://learnopengl.com/Lighting/Materials    
 // http://devernay.free.fr/cours/opengl/materials.html    (different materials)
+// https://learnopengl.com/Lighting/Light-casters (spotlight)
 //--------------------------------------------------
 
 #include <cmath>
@@ -92,6 +93,7 @@ public:
 
   }
 
+  // this method sets the uniform variables for the shaders
   void initShaderVars() {
     // this is phong shader
     if (curShader > 0 && curShader < 3) {
@@ -99,6 +101,8 @@ public:
       vec3 Ld= vec3(0.90f); // light diffusion
       vec3 Ls= vec3(0.90f); // light specular
 
+      // to get desired light position in eye coordinates (so the MV * lightPos)
+      // undoes it
       vec4 lightPos_eye= renderer.viewMatrix() * this->lightPosition;
       
       renderer.setUniform("Light.La", La);
@@ -117,22 +121,24 @@ public:
       renderer.setUniform("Material.Ks", Ks);
       renderer.setUniform("Material.alpha", shininess);
     } else if (curShader >= 3) { // spotlight shader
-      vec3 lightIntensity= vec3(0.90f);
+      vec3 lightIntensity= vec3(0.9f);
 
-      vec4 lightPos_eye= renderer.viewMatrix() * this->spotlightPosition;
-      vec3 lightDir= normalize(vec3(0) - vec3(this->spotlightPosition));
+      vec4 lightPos_eye= vec4(0.0, 0.0, 0.0, 1.0f);
+      vec3 lightDir= normalize(vec3(0, 0, -1));
 
-      float lightExp= 5.0f;
-      float lightAngle= 60.0f;
+      float lightExp= 1.0f;
+      float innerCutOff= cos(radians(15.0f));
+      float outerCutOff= cos(radians(22.5f));
 
       renderer.setUniform("Spot.pos", lightPos_eye);
       renderer.setUniform("Spot.intensity", lightIntensity);
       renderer.setUniform("Spot.dir", lightDir);
       renderer.setUniform("Spot.exp", lightExp);
-      renderer.setUniform("Spot.angle", lightAngle);
+      renderer.setUniform("Spot.innerCutOff", innerCutOff);
+      renderer.setUniform("Spot.outerCutOff", outerCutOff);
 
       // silver material
-      vec3 Ka= vec3(0.19225f); // reflect ambiance
+      vec3 Ka= vec3(0.15225f); // reflect ambiance
       vec3 Kd= vec3(0.50754f); // reflect diffusion
       vec3 Ks= vec3(0.508273f); // reflect specular
       float shininess= 128.0f * 0.4f;
@@ -147,6 +153,22 @@ public:
 
   void draw() {
     float aspect = ((float)width()) / height();
+    
+    // this is to set the camera
+    renderer.perspective(glm::radians(60.0f), aspect, 0.1f, 50.0f);
+
+    // getting the camera pos
+    eyePos.x= radius * sin(azimuth) * cos(elevation);
+    eyePos.y= radius * sin(elevation);
+    eyePos.z= radius * cos(azimuth) * cos(elevation);
+
+    camZ= eyePos - lookPos;
+    camX= cross(vec3(0, 1, 0), camZ);
+    camY= cross(camZ, camX);
+
+    renderer.lookAt(eyePos, lookPos, camY);
+
+    // get the bounding box
     vec3 maxBounds= mesh.maxBounds();
     vec3 minBounds= mesh.minBounds();
     
@@ -170,29 +192,20 @@ public:
     vec3 midPoint= (maxBounds + minBounds) * 0.5f;
     midPoint= -midPoint;
 
-    renderer.perspective(glm::radians(60.0f), aspect, 0.1f, 50.0f);
-    renderer.rotate(vec3(0,0,0));
+    renderer.push();
+      renderer.rotate(vec3(0,0,0));
+      renderer.scale(scale);
+      renderer.translate(midPoint);
 
-    renderer.scale(scale);
-    renderer.translate(midPoint);
-    eyePos.x= radius * sin(azimuth) * cos(elevation);
-    eyePos.y= radius * sin(elevation);
-    eyePos.z= radius * cos(azimuth) * cos(elevation);
+      renderer.beginShader(shaders[curShader]);
+        initShaderVars();
+        renderer.mesh(mesh);
+      renderer.endShader();
 
-    camZ= eyePos - lookPos;
+    renderer.pop();
 
-    camX= cross(vec3(0, 1, 0), camZ);
 
-    camY= cross(camZ, camX);
 
-    renderer.lookAt(eyePos, lookPos, camY);
-
-    renderer.beginShader(shaders[curShader]);
-
-    initShaderVars();
-
-    renderer.mesh(mesh);
-    renderer.endShader();
   }
 
 protected:
