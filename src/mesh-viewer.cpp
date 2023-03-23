@@ -60,7 +60,7 @@ public:
     numModels= models.size();
 
     // change the light positions here
-    this->lightPosition= vec4(2.5f, 5.0f, 10.0f, 1.0f); 
+    this->lightPosition= vec4(0.0f, 0.0f, -10.0f, 1.0f); 
     this->lightIntensity= vec3(0.9f);
   }
 
@@ -116,6 +116,15 @@ public:
     } else if (key == GLFW_KEY_M) {
       moveLight= !moveLight;
     }
+  }
+
+  void changeLightPos() {
+    theta+= dt()*2;
+    phi+= 0.4f*dt();
+
+    this->lightPosition.x= lightRadius * sin(theta) * cos(phi);
+    this->lightPosition.y= lightRadius * sin(phi);
+    this->lightPosition.z= lightRadius * cos(theta) * cos(phi);
 
   }
 
@@ -247,6 +256,10 @@ public:
       renderer.endShader();
     renderer.pop();
 
+    if (moveLight) {
+      changeLightPos();
+    }
+
     renderer.push();
       renderer.translate(this->lightPosition);
       renderer.scale(vec3(1.75f));
@@ -271,7 +284,12 @@ protected:
   // 1.0f is a position, while 0.0f is a direction
   vec4 lightPosition;
   vec3 lightIntensity;
+  float lightRadius= 10.0f;
   bool moveLight= false; // will determine if the light moves or not
+
+  // for the light to move
+  float theta= M_PI;
+  float phi= 0.0f;
 
 
   std::vector<string> models;

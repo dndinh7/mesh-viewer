@@ -10,6 +10,7 @@ using namespace glm;
 using namespace agl;
 
 int main() {
+   
    PLYMesh mesh("../models/cube.ply");
 
    // print vertices, normals, colors, etc
@@ -40,6 +41,9 @@ int main() {
       int i3 = mesh.indices()[i+2];
       std::cout << i1 << " " << i2 << " " << i3 << std::endl;
    }
+   
+
+
    return 0;
 }
 
