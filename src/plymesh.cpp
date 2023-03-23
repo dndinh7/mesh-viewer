@@ -23,7 +23,11 @@ namespace agl {
 
   void PLYMesh::init() {
     assert(_positions.size() != 0);
-    initBuffers(&_faces, &_positions, &_normals);
+    if (this->_texCoords.size() == 0) {// that means there are no texCoords
+      initBuffers(&_faces, &_positions, &_normals);
+    } else {
+      initBuffers(&_faces, &_positions, &_normals, &_texCoords);
+    }
   }
 
   PLYMesh::~PLYMesh() {
@@ -39,7 +43,6 @@ namespace agl {
       std::cout << warningMsg << std::endl;
       return true;
     }
-
     return false;
   }
 
@@ -175,8 +178,8 @@ namespace agl {
                   this->_positions.push_back(num);
                 } else if (wordIdx >= 3 && wordIdx < 6) { // nx, ny, nz
                   this->_normals.push_back(num);
-                } else { // s and t, but not sure where to put them
-
+                } else if (wordIdx >= 6 && wordIdx < 8) { // s and t, but not sure where to put them
+                  this->_texCoords.push_back(num);
                 }
 
               } catch (std::invalid_argument const& ex) {
@@ -284,6 +287,10 @@ namespace agl {
 
   const std::vector<GLfloat>& PLYMesh::normals() const {
     return _normals;
+  }
+
+  const std::vector<GLfloat>& PLYMesh::texCoords() const {
+    return _texCoords;
   }
 
   const std::vector<GLuint>& PLYMesh::indices() const {

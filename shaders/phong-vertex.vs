@@ -10,6 +10,7 @@ uniform mat4 MVP;
 uniform bool HasUV;
 
 out vec3 Intensity; // outgoing intensity
+out vec2 uv; // outgoing texture coordinates
 
 struct LightSource {
   vec4 pos; // position of light in eye coordinates
@@ -27,8 +28,9 @@ struct MaterialProp {
   float alpha; // specular exponent factor
 };
 
-
 uniform MaterialProp Material;
+
+
 
 vec3 phong(vec4 p_eye, vec3 n_eye) {
   // vector to the light source
@@ -58,11 +60,14 @@ vec3 phong(vec4 p_eye, vec3 n_eye) {
 
 void main()
 {
-   // get the normal and vertex position to eye coordinates
-   vec3 n_eye= normalize(NormalMatrix * vNormals);
-   vec4 p_eye= ModelViewMatrix * vec4(vPos, 1.0);
-   
-   Intensity= phong(p_eye, n_eye);
+  // get the normal and vertex position to eye coordinates
+  vec3 n_eye= normalize(NormalMatrix * vNormals);
+  vec4 p_eye= ModelViewMatrix * vec4(vPos, 1.0);
 
-   gl_Position = MVP * vec4(vPos, 1.0);
+  uv= vTextureCoords;
+  
+  Intensity= phong(p_eye, n_eye);
+  
+
+  gl_Position = MVP * vec4(vPos, 1.0);
 }

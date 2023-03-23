@@ -1,10 +1,17 @@
 //--------------------------------------------------
 // Author: David Dinh
 // Date: 2 March 2023
-// Description: Loads PLY files in ASCII format
+// Description: Renders the model and shader
+// Orbit around the model by dragging left click
+// Zoom in and out using the scroll wheel, or by shift + left click drag
+// Change the model by press 'n' for next and 'p' for previous
+// Change the shader by pressing 's'
 // References: https://learnopengl.com/Lighting/Materials    
 // http://devernay.free.fr/cours/opengl/materials.html    (different materials)
 // https://learnopengl.com/Lighting/Light-casters (spotlight)
+// --------------------------------------------------------------------
+// MODEL FOR THE FLASHLIGHT: created by DJMaesen
+// https://sketchfab.com/3d-models/flashlight-12d6911e84154d2ab485d983361df76f
 //--------------------------------------------------
 
 #include <cmath>
@@ -24,15 +31,25 @@ public:
   }
 
   void setup() {
-    renderer.loadShader("normals", "../shaders/normals.vs", "../shaders/normals.fs");
-    renderer.loadShader("phong-vertex", "../shaders/phong-vertex.vs", "../shaders/phong-vertex.fs");
-    renderer.loadShader("phong-pixel", "../shaders/phong-pixel.vs", "../shaders/phong-pixel.fs");
-    renderer.loadShader("spotlight", "../shaders/spotlight.vs", "../shaders/spotlight.fs");
     shaders.push_back("normals");
     shaders.push_back("phong-vertex");
     shaders.push_back("phong-pixel");
     shaders.push_back("spotlight");
-    numShaders= 4;
+    shaders.push_back("toon");
+    numShaders= shaders.size();
+    
+    for (string shaderName: shaders) {
+      string path= "../shaders/" + shaderName;
+      renderer.loadShader(shaderName, path + ".vs", path + ".fs");
+    }
+
+    textures.push_back("chess-board");
+    numTextures= textures.size();
+
+    for (string textureName: textures) {
+      renderer.loadTexture(textureName, "../textures/" + textureName + ".png", 0);
+    }
+
 
     models= GetFilenamesInDir("../models", "ply");
     mesh.load("../models/" + models[curModel]);
@@ -89,6 +106,9 @@ public:
     } else if (key == GLFW_KEY_S) {
       curShader= (curShader + 1) % numShaders;
       std::cout << "changed shader to: " << shaders[curShader] << std::endl;
+    } else if (key == GLFW_KEY_T) {
+      curTexture= (curTexture + 1) % numTextures;
+      std::cout << "changed texture to: " << textures[curTexture] << std::endl;
     }
 
   }
@@ -120,7 +140,7 @@ public:
       renderer.setUniform("Material.Kd", Kd);
       renderer.setUniform("Material.Ks", Ks);
       renderer.setUniform("Material.alpha", shininess);
-    } else if (curShader >= 3) { // spotlight shader
+    } else if (curShader == 3) { // spotlight shader
       vec3 lightIntensity= vec3(0.9f);
 
       vec4 lightPos_eye= vec4(0.0, 0.0, 0.0, 1.0f);
@@ -147,7 +167,24 @@ public:
       renderer.setUniform("Material.Kd", Kd);
       renderer.setUniform("Material.Ks", Ks);
       renderer.setUniform("Material.alpha", shininess);
+    } else if (curShader == 4) { // toon shader
+      vec3 lightIntensity= vec3(0.90f); // light ambience 
 
+      // to get desired light position in eye coordinates (so the MV * lightPos)
+      // undoes it
+      vec4 lightPos_eye= renderer.viewMatrix() * this->lightPosition;
+     
+      renderer.setUniform("Light.pos", lightPos_eye);
+      renderer.setUniform("Light.intensity", lightIntensity);
+
+      // silver material 
+      vec3 Ka= vec3(0.19225f); // reflect ambiance
+      vec3 Kd= vec3(0.75, 0.6332, 0.11); // reflect diffusion
+      vec3 outlineColor= vec3(1.0f);
+
+      renderer.setUniform("Material.Ka", Ka);
+      renderer.setUniform("Material.Kd", Kd);
+      renderer.setUniform("Material.outlineColor", outlineColor);
     }
   }
 
@@ -199,9 +236,11 @@ public:
 
       renderer.beginShader(shaders[curShader]);
         initShaderVars();
+        renderer.texture("diffuseTexture", textures[curTexture]);
         renderer.mesh(mesh);
       renderer.endShader();
 
+      
     renderer.pop();
 
 
@@ -223,10 +262,13 @@ protected:
 
   std::vector<string> models;
   std::vector<string> shaders;
+  std::vector<string> textures;
   int numModels;
   int numShaders;
+  int numTextures;
   int curShader= 0;
   int curModel= 0;
+  int curTexture= 0;
   float radius= 10.0f;
   float elevation= 0;
   float azimuth= 0;
