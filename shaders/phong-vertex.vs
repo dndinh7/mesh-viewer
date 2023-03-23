@@ -14,12 +14,10 @@ out vec2 uv; // outgoing texture coordinates
 
 struct LightSource {
   vec4 pos; // position of light in eye coordinates
-  vec3 La;  // light ambience
-  vec3 Ld;  // light diffusion
-  vec3 Ls;  // light specular
+  vec3 intensity; // lightIntensity
 };
 
-uniform LightSource Light;
+uniform LightSource Light; 
 
 struct MaterialProp {
   vec3 Ka;    // reflect ambience
@@ -28,8 +26,7 @@ struct MaterialProp {
   float alpha; // specular exponent factor
 };
 
-uniform MaterialProp Material;
-
+uniform MaterialProp Material; 
 
 
 vec3 phong(vec4 p_eye, vec3 n_eye) {
@@ -42,10 +39,10 @@ vec3 phong(vec4 p_eye, vec3 n_eye) {
   
   vec3 v= normalize(vec3(-p_eye)); // vector to camera
 
-  vec3 ambient= Light.La * Material.Ka; // ambient light
+  vec3 ambient= Light.intensity * Material.Ka; // ambient light
 
   float sDotn= max(dot(s, n_eye), 0);
-  vec3 diffuse=  Light.Ld * Material.Kd * sDotn; // diffuse color
+  vec3 diffuse=  Light.intensity * Material.Kd * sDotn; // diffuse color
 
   vec3 r= 2 * (sDotn) * n_eye - s; 
   vec3 specular= vec3(0.0f);
@@ -54,7 +51,8 @@ vec3 phong(vec4 p_eye, vec3 n_eye) {
   // specular when the angle between the light and normal
   // is acute
   if (sDotn > 0.0f)
-    specular= Light.Ls * Material.Ks * pow(max(dot(r, v), 0), Material.alpha);
+    specular= Light.intensity * Material.Ks * pow(max(dot(r, v), 0), Material.alpha);
+  
   return ambient + diffuse + specular;
 }
 

@@ -24,6 +24,12 @@ struct MaterialInfo {
 
 uniform MaterialInfo Material;
 
+// texture information
+uniform sampler2D diffuseTexture;
+uniform bool HasUV;
+in vec2 uv;
+const float uvScale= 3.0f;
+
 out vec4 FragColor;
 
 vec3 phongSpot() {
@@ -45,20 +51,28 @@ vec3 phongSpot() {
   // interpolate the light intensity based on distance the theta (our current
   // angle) is between the inner and outer cutoff angles
   float intensity= max(min((theta - Spot.outerCutOff)/epsilon, 1.0f), 0.0f);
-
-  vec3 ambient= Spot.intensity * Material.Ka;
-
-
-
+  
   // normal spotlight calculations
   float spotFactor= pow(theta, Spot.exp);
   vec3 v= normalize(vec3(-p_eye)); // direction to camera
   vec3 h = normalize(v + s); // half way vector from 
-  return ambient +
-    spotFactor * Spot.intensity * intensity * (
-      Material.Kd * max(dot(s, n), 0.0) +
-      Material.Ks * pow(max(dot(h, n), 0.0f), Material.alpha));
-  
+
+  vec3 ambient= Spot.intensity * Material.Ka;
+  vec3 diffuse= spotFactor * Spot.intensity * intensity * Material.Kd 
+    * max(dot(s, n), 0.0f);
+  vec3 specular= spotFactor * Spot.intensity * intensity * Material.Ks
+    * pow(max(dot(h, n), 0.0f), Material.alpha);
+
+  vec3 color;
+  if (HasUV) {
+    color= (ambient + diffuse) * texture(diffuseTexture, uv * uvScale).xyz + specular;
+  } else {
+    color= ambient + diffuse + specular;
+  }
+
+
+
+  return color;
 }
 
 void main()

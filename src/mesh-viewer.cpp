@@ -6,6 +6,7 @@
 // Zoom in and out using the scroll wheel, or by shift + left click drag
 // Change the model by press 'n' for next and 'p' for previous
 // Change the shader by pressing 's'
+// Change the texture by pressing 't'
 // References: https://learnopengl.com/Lighting/Materials    
 // http://devernay.free.fr/cours/opengl/materials.html    (different materials)
 // https://learnopengl.com/Lighting/Light-casters (spotlight)
@@ -43,6 +44,9 @@ public:
       renderer.loadShader(shaderName, path + ".vs", path + ".fs");
     }
 
+    // this is for rendering objects with a specified color (not part of the main)
+    renderer.loadShader("only-color", "../shaders/only-color.vs", "../shaders/only-color.fs");
+
     textures.push_back("chess-board");
     numTextures= textures.size();
 
@@ -55,9 +59,9 @@ public:
     mesh.load("../models/" + models[curModel]);
     numModels= models.size();
 
-    // change the light position here..
+    // change the light positions here
     this->lightPosition= vec4(2.5f, 5.0f, 10.0f, 1.0f); 
-    this->spotlightPosition= vec4(2.5f, 10.0f, 2.5f, 1.0f);
+    this->lightIntensity= vec3(0.9f);
   }
 
   void mouseMotion(int x, int y, int dx, int dy) {
@@ -109,6 +113,8 @@ public:
     } else if (key == GLFW_KEY_T) {
       curTexture= (curTexture + 1) % numTextures;
       std::cout << "changed texture to: " << textures[curTexture] << std::endl;
+    } else if (key == GLFW_KEY_M) {
+      moveLight= !moveLight;
     }
 
   }
@@ -117,17 +123,12 @@ public:
   void initShaderVars() {
     // this is phong shader
     if (curShader > 0 && curShader < 3) {
-      vec3 La= vec3(0.90f); // light ambience 
-      vec3 Ld= vec3(0.90f); // light diffusion
-      vec3 Ls= vec3(0.90f); // light specular
 
       // to get desired light position in eye coordinates (so the MV * lightPos)
       // undoes it
       vec4 lightPos_eye= renderer.viewMatrix() * this->lightPosition;
       
-      renderer.setUniform("Light.La", La);
-      renderer.setUniform("Light.Ld", Ld);
-      renderer.setUniform("Light.Ls", Ls);
+      renderer.setUniform("Light.intensity", lightIntensity);
       renderer.setUniform("Light.pos", lightPos_eye);
 
       // silver material 
@@ -141,10 +142,16 @@ public:
       renderer.setUniform("Material.Ks", Ks);
       renderer.setUniform("Material.alpha", shininess);
     } else if (curShader == 3) { // spotlight shader
-      vec3 lightIntensity= vec3(0.9f);
 
-      vec4 lightPos_eye= vec4(0.0, 0.0, 0.0, 1.0f);
-      vec3 lightDir= normalize(vec3(0, 0, -1));
+      // these positions and direction indicate the spotlight
+      // is right at the camera and the direction is forward
+      //vec4 lightPos_eye= vec4(0.0, 0.0, 0.0, 1.0f);
+      //vec3 lightDir= normalize(vec3(0, 0, -1));
+
+      // spotlight position and direction
+      vec4 lightPos_eye= renderer.viewMatrix() * this->lightPosition;
+      vec3 lightDir= renderer.viewMatrix() * vec4(normalize(vec3(0) - 
+        vec3(this->lightPosition)), 0.0f);
 
       float lightExp= 1.0f;
       float innerCutOff= cos(radians(15.0f));
@@ -168,7 +175,6 @@ public:
       renderer.setUniform("Material.Ks", Ks);
       renderer.setUniform("Material.alpha", shininess);
     } else if (curShader == 4) { // toon shader
-      vec3 lightIntensity= vec3(0.90f); // light ambience 
 
       // to get desired light position in eye coordinates (so the MV * lightPos)
       // undoes it
@@ -239,10 +245,16 @@ public:
         renderer.texture("diffuseTexture", textures[curTexture]);
         renderer.mesh(mesh);
       renderer.endShader();
-
-      
     renderer.pop();
 
+    renderer.push();
+      renderer.translate(this->lightPosition);
+      renderer.scale(vec3(1.75f));
+      renderer.beginShader("only-color");
+        renderer.setUniform("color", lightIntensity);
+        renderer.cube();
+      renderer.endShader();
+    renderer.pop();
 
 
   }
@@ -258,7 +270,9 @@ protected:
   // determines light position
   // 1.0f is a position, while 0.0f is a direction
   vec4 lightPosition;
-  vec4 spotlightPosition;
+  vec3 lightIntensity;
+  bool moveLight= false; // will determine if the light moves or not
+
 
   std::vector<string> models;
   std::vector<string> shaders;
@@ -269,6 +283,8 @@ protected:
   int curShader= 0;
   int curModel= 0;
   int curTexture= 0;
+
+  // sphere orbiting angles
   float radius= 10.0f;
   float elevation= 0;
   float azimuth= 0;

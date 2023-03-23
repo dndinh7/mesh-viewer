@@ -13,12 +13,18 @@ uniform bool HasUV;
 out vec3 n_eye;
 out vec4 p_eye;
 
+out vec2 uv;
+
 void main()
 {
   // get the normal and vertex position to eye coordinates
   n_eye= normalize(NormalMatrix * vNormals);
   p_eye= ModelViewMatrix * vec4(vPos, 1.0);
+
+  uv= vTextureCoords;
   
+  uv= vTextureCoords;
+
   gl_Position = MVP * vec4(vPos, 1.0);
 }
 
