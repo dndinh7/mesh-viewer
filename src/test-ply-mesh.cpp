@@ -10,8 +10,8 @@ using namespace glm;
 using namespace agl;
 
 int main() {
-   
-   PLYMesh mesh("../models/cube.ply");
+  // sorry I changed the name of the cube
+   PLYMesh mesh("../models/cube-uv.ply");
 
    // print vertices, normals, colors, etc
    std::cout << "This mesh has " << mesh.numVertices() << " vertices" << std::endl;
@@ -41,9 +41,6 @@ int main() {
       int i3 = mesh.indices()[i+2];
       std::cout << i1 << " " << i2 << " " << i3 << std::endl;
    }
-   
-
-
    return 0;
 }
 
