@@ -56,7 +56,7 @@ mesh-viewer/build $ ../bin/mesh-viewer
 
 ![image](https://user-images.githubusercontent.com/72237791/227418839-183e79f6-bb6d-4436-b33b-1a4dbc08f270.png)
 
-##Phong-Vertex Shading
+## Phong-Vertex Shading
 
 ![phong-vertex](https://user-images.githubusercontent.com/72237791/227417866-2bac79c3-471b-4dd8-8e9a-f1f412c750ed.png)
 
@@ -82,4 +82,6 @@ mesh-viewer/build $ ../bin/mesh-viewer
 ### Fog
 
 ![textured_toon_sphere](https://user-images.githubusercontent.com/72237791/227418317-ee432361-39c6-4493-8c47-7ecd71663c78.png)
+
+
 
