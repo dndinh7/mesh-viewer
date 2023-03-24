@@ -7,6 +7,7 @@
 // Change the model by press 'n' for next and 'p' for previous
 // Change the shader by pressing 's'
 // Change the texture by pressing 't'
+// Make the light move/stop by pressing 'm'
 // References: https://learnopengl.com/Lighting/Materials    
 // http://devernay.free.fr/cours/opengl/materials.html    (different materials)
 // https://learnopengl.com/Lighting/Light-casters (spotlight)
@@ -14,6 +15,9 @@
 // MODEL FOR THE FLASHLIGHT: created by DJMaesen
 // https://sketchfab.com/3d-models/flashlight-12d6911e84154d2ab485d983361df76f
 //--------------------------------------------------
+// TEXTURES:
+// PINK MARBLE: https://i.pinimg.com/736x/c0/de/97/c0de974be4d6051e8c4efc2e4eb3d896.jpg
+// CHESS BOARD: https://static.vecteezy.com/system/resources/thumbnails/004/249/098/small/abstract-background-black-and-white-chessboard-pattern-optical-illusion-texture-for-your-design-free-vector.jpg
 
 #include <cmath>
 #include <string>
@@ -37,6 +41,7 @@ public:
     shaders.push_back("phong-pixel");
     shaders.push_back("spotlight");
     shaders.push_back("toon");
+    shaders.push_back("fog");
     numShaders= shaders.size();
     
     for (string shaderName: shaders) {
@@ -47,7 +52,9 @@ public:
     // this is for rendering objects with a specified color (not part of the main)
     renderer.loadShader("only-color", "../shaders/only-color.vs", "../shaders/only-color.fs");
 
+    textures.push_back("default-white");
     textures.push_back("chess-board");
+    textures.push_back("pink-marble");
     numTextures= textures.size();
 
     for (string textureName: textures) {
@@ -67,7 +74,8 @@ public:
   void mouseMotion(int x, int y, int dx, int dy) {
     if (keyIsDown(GLFW_KEY_LEFT_SHIFT) && mouseIsDown(GLFW_MOUSE_BUTTON_LEFT)) {
         // more intuitive left shift mouse click only depending on horizontal movement
-        radius= std::max(10.0f, radius - dx);
+        // restrict it to 10 and the wall radius
+        radius= std::min(std::max(10.0f, radius - dx), wallScale/2);
         cout << "radius: " << radius << endl;
     } else if (mouseIsDown(GLFW_MOUSE_BUTTON_LEFT)) {
         azimuth+= (float)dx * 0.01f;
@@ -88,7 +96,7 @@ public:
 
   void scroll(float dx, float dy) {
     // cap at 10, so we don't get inside mesh
-    radius= std::max(10.0f, radius-dy);
+    radius= std::min(std::max(10.0f, radius-dy), wallScale/2);
     cout << "radius: " << radius << endl;
   }
 
@@ -129,9 +137,16 @@ public:
   }
 
   // this method sets the uniform variables for the shaders
-  void initShaderVars() {
+  // default material color is red plastic
+  void initShaderVars(string shaderType,
+    vec3 Ka= vec3(0.1f), 
+    vec3 Kd= vec3(0.775f, 0.0f, 0.0f),
+    vec3 Ks= vec3(0.9f, 0.7f, 0.7f)) {
+
+    float shininess= 128.0f * 0.25f;
+
     // this is phong shader
-    if (curShader > 0 && curShader < 3) {
+    if (shaderType == "phong-vertex" || shaderType == "phong-pixel") {
 
       // to get desired light position in eye coordinates (so the MV * lightPos)
       // undoes it
@@ -139,18 +154,12 @@ public:
       
       renderer.setUniform("Light.intensity", lightIntensity);
       renderer.setUniform("Light.pos", lightPos_eye);
-
-      // silver material 
-      vec3 Ka= vec3(0.19225f); // reflect ambiance
-      vec3 Kd= vec3(0.50754f); // reflect diffusion
-      vec3 Ks= vec3(0.508273f); // reflect specular
-      float shininess= 128.0f * 0.4f;
       
       renderer.setUniform("Material.Ka", Ka);
       renderer.setUniform("Material.Kd", Kd);
       renderer.setUniform("Material.Ks", Ks);
       renderer.setUniform("Material.alpha", shininess);
-    } else if (curShader == 3) { // spotlight shader
+    } else if (shaderType == "spotlight") { // spotlight shader
 
       // these positions and direction indicate the spotlight
       // is right at the camera and the direction is forward
@@ -172,18 +181,12 @@ public:
       renderer.setUniform("Spot.exp", lightExp);
       renderer.setUniform("Spot.innerCutOff", innerCutOff);
       renderer.setUniform("Spot.outerCutOff", outerCutOff);
-
-      // silver material
-      vec3 Ka= vec3(0.15225f); // reflect ambiance
-      vec3 Kd= vec3(0.50754f); // reflect diffusion
-      vec3 Ks= vec3(0.508273f); // reflect specular
-      float shininess= 128.0f * 0.4f;
       
       renderer.setUniform("Material.Ka", Ka);
       renderer.setUniform("Material.Kd", Kd);
       renderer.setUniform("Material.Ks", Ks);
       renderer.setUniform("Material.alpha", shininess);
-    } else if (curShader == 4) { // toon shader
+    } else if (shaderType == "toon") { // toon shader
 
       // to get desired light position in eye coordinates (so the MV * lightPos)
       // undoes it
@@ -192,7 +195,7 @@ public:
       renderer.setUniform("Light.pos", lightPos_eye);
       renderer.setUniform("Light.intensity", lightIntensity);
 
-      // silver material 
+      // green material 
       vec3 Ka= vec3(0.19225f); // reflect ambiance
       vec3 Kd= vec3(0.75, 0.6332, 0.11); // reflect diffusion
       vec3 outlineColor= vec3(1.0f);
@@ -200,14 +203,35 @@ public:
       renderer.setUniform("Material.Ka", Ka);
       renderer.setUniform("Material.Kd", Kd);
       renderer.setUniform("Material.outlineColor", outlineColor);
+    } else if (shaderType == "fog") { // fog
+      // to get desired light position in eye coordinates (so the MV * lightPos)
+      // undoes it
+      vec4 lightPos_eye= renderer.viewMatrix() * this->lightPosition;
+      
+      renderer.setUniform("Light.intensity", lightIntensity);
+      renderer.setUniform("Light.pos", lightPos_eye);
+      
+      renderer.setUniform("Material.Ka", Ka);
+      renderer.setUniform("Material.Kd", Kd);
+      renderer.setUniform("Material.Ks", Ks);
+      renderer.setUniform("Material.alpha", shininess);
+
+      renderer.setUniform("Fog.maxDist", wallScale * 0.90f);
+      renderer.setUniform("Fog.minDist", wallScale/2);
+      // this is gray fog
+      vec3 c= vec3(0xab/255.0f, 0xae/255.0f, 0xb0/255.0f);
+      // but I like the black fog better
+      c= vec3(0.1f);
+      renderer.setUniform("Fog.color", c);
     }
   }
 
   void draw() {
     float aspect = ((float)width()) / height();
     
+
     // this is to set the camera
-    renderer.perspective(glm::radians(60.0f), aspect, 0.1f, 50.0f);
+    renderer.perspective(glm::radians(60.0f), aspect, 0.1f, wallScale*1.5f);
 
     // getting the camera pos
     eyePos.x= radius * sin(azimuth) * cos(elevation);
@@ -250,7 +274,7 @@ public:
       renderer.translate(midPoint);
 
       renderer.beginShader(shaders[curShader]);
-        initShaderVars();
+        initShaderVars(shaders[curShader]);
         renderer.texture("diffuseTexture", textures[curTexture]);
         renderer.mesh(mesh);
       renderer.endShader();
@@ -268,6 +292,58 @@ public:
         renderer.cube();
       renderer.endShader();
     renderer.pop();
+    
+
+    renderer.beginShader("fog");
+      renderer.texture("diffuseTexture", "chess-board");
+      initShaderVars("fog", vec3(0.1f), vec3(0.5f), vec3(0.9f));
+
+
+      vec3 floorCoords= vec3(0, -wallScale/2, 0);
+      vec3 ceilingCoords= vec3(0, wallScale/2, 0.0f); 
+      vec3 posXCoords= vec3(wallScale/2, 0, 0.0f);
+      vec3 negativeXCoords= vec3(-wallScale/2, 0, 0.0f);
+      vec3 posZCoords= vec3(0.0f, 0, wallScale/2);
+      vec3 negativeZCoords= vec3(0.0f, 0, -wallScale/2);
+      // flooring
+      renderer.push();
+        renderer.translate(floorCoords);
+        renderer.scale(vec3(wallScale, 0.1f, wallScale));
+        renderer.cube();
+      renderer.pop();
+      // ceiling
+      renderer.push();
+        renderer.translate(ceilingCoords);
+        renderer.scale(vec3(wallScale, 0.1f, wallScale));
+        renderer.cube();
+      renderer.pop();
+
+      // x-dir walls
+      renderer.push();
+        renderer.translate(posXCoords);
+        renderer.scale(vec3(0.1f, wallScale, wallScale));
+        renderer.cube();
+      renderer.pop();
+
+      renderer.push();
+        renderer.translate(negativeXCoords);
+        renderer.scale(vec3(0.1f, wallScale, wallScale));
+        renderer.cube();
+      renderer.pop();
+
+      // z-dir walls
+      renderer.push();
+        renderer.translate(posZCoords);
+        renderer.scale(vec3(wallScale, wallScale, 0.1f));
+        renderer.cube();
+      renderer.pop();
+
+      renderer.push();
+        renderer.translate(negativeZCoords);
+        renderer.scale(vec3(wallScale, wallScale, 0.1f));
+        renderer.cube();
+      renderer.pop();
+    renderer.endShader();
 
 
   }
@@ -290,6 +366,9 @@ protected:
   // for the light to move
   float theta= M_PI;
   float phi= 0.0f;
+
+  // distance between walls
+  float wallScale= 60.0f;
 
 
   std::vector<string> models;

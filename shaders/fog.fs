@@ -1,12 +1,19 @@
 #version 400
 
-
 struct LightSource {
   vec4 pos; // position of light in eye coordinates
   vec3 intensity; // light intensity
 };
 
 uniform LightSource Light;
+
+struct FogInfo {
+  float maxDist; // distance where camera can only see fog
+  float minDist; // distance from eye, so that there is no fog
+  vec3 color; // color of fog
+};
+
+uniform FogInfo Fog;
 
 struct MaterialProp {
   vec3 Ka; // reflect ambience
@@ -66,5 +73,14 @@ vec3 phong() {
 
 void main()
 {
-  FragColor = vec4(phong(), 1.0);
+  float dist= abs(p_eye.z);
+  float fogFactor;
+  // linear fog factor
+  fogFactor= (Fog.maxDist - dist) / (Fog.maxDist - Fog.minDist);
+
+  fogFactor= max(min(fogFactor, 1.0f), 0.0f);
+  vec3 color= phong();
+  color= mix(Fog.color, color, fogFactor);
+
+  FragColor = vec4(color, 1.0);
 }
