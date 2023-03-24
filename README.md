@@ -56,7 +56,7 @@ mesh-viewer/build $ ../bin/mesh-viewer
 
 ![image](https://user-images.githubusercontent.com/72237791/227418839-183e79f6-bb6d-4436-b33b-1a4dbc08f270.png)
 
-## Phong-Vertex Shading
+### Phong-Vertex Shading
 
 ![phong-vertex](https://user-images.githubusercontent.com/72237791/227417866-2bac79c3-471b-4dd8-8e9a-f1f412c750ed.png)
 
